@@ -9,9 +9,9 @@
 % Best viewed with space indentation (2 spaces)
 % =============================================================================
 %
-% Description:
+% DESCRIPTION
 % Takes a signal (vector) as input, reads a window of 'w' samples, jumps
-% 'h' samples further, read another 'w' samples and so on.
+% 'h' samples further, reads another 'w' samples and so on.
 % The content of each read is returned in a matrix where each column
 % corresponds to a read.
 % The last read is padded with zeros if there aren't enough samples.

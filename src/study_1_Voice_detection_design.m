@@ -1,3 +1,15 @@
+% =============================================================================
+% Project       : lpcSpeechSynthesis
+% Module name   : study_1_Voice_detection_design
+% File name     : study_1_Voice_detection_design.m
+% Purpose       : experimental framework to analyse a voice signal frame by 
+%                 frame, to help designing a voice/noise discriminator.
+% Author        : QuBi (nitrogenium@hotmail.com)
+% Creation date : Sunday, 02 February 2025
+% -----------------------------------------------------------------------------
+% Best viewed with space indentation (2 spaces)
+% =============================================================================
+
 close all
 clear all
 clc
@@ -18,11 +30,8 @@ s = s(1:kMax, :);
 f = fs*(0:(kMax-1))'/fftSize;
 
 
-
 fig = figure('Name', 'Signal explorer', 'Position', [475, 250, 1616, 953]);
 
-% Initialise the plot
-%ax = axes('Parent', fig, 'Position', [0.1, 0.3, 0.85, 0.65]);
 
 hSub1 = subplot(2,1,1);
 hPlot1 = plot(Mx(:,1));
@@ -64,43 +73,20 @@ end
 
 
 
-function updatePlot(colIndex, Mx, s, hPlot1, hPlot2, hSub1, hSub2)
+function updatePlot(frame, Mx, s, hPlot1, hPlot2, hSub1, hSub2)
   %set(hPlot2, 'YData', 20*log10(abs(s(:,colIndex))));
  
   %set(hPlot1, 'YData', Mx(:, colIndex));
   %set(hPlot2, 'YData', 20*log10(abs(s(:,colIndex))));
   
-  hPlot1.YData = Mx(:, colIndex);
-  hPlot2.YData = 20*log10(abs(s(:,colIndex)));
+  hPlot1.YData = Mx(:, frame);
+  hPlot2.YData = 20*log10(abs(s(:,frame)));
   
-  hSub1.Title.String = sprintf('Frame %d/%d - Power: %f', colIndex, size(s,2), sum(Mx(:, colIndex).^2, 1));
+  hSub1.Title.String = sprintf('Frame %d/%d - Power: %f', frame, size(s,2), sum(Mx(:, frame).^2, 1));
   
   %title(ax, sprintf('Frame %d/%d', colIndex, size(s,2)));
   %set(label, 'String', ['Col: ' num2str(colIndex)]);
 end
   
 
-% function getSpectrum(x)
-% 
-% y = Mx(:,r) .* hann(w);
-% 
-% s = fft(y, fftSize);
-% s = s(1:kMax);
-% f = fs*(0:(kMax-1))'/fftSize;
-% subplot(2,1,2)
-% plot(f, 20*log10(abs(s)))
-% %xlim(0
-% ylim([-40 60])
-% grid minor
-% 
-% title(sprintf('Frame %d/%d, Power = %f', r, nFrm, pow))
-% 
-% 
-% subplot(2,1,1)
-% plot(Mx(:,r))
-% ylim([-1.0 1.0])
-% 
-% end
-% 
-%   
-  
+
