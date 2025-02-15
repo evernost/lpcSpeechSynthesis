@@ -18,10 +18,9 @@
 % Arguments:
 % - Mx  [w*nReads]  : matrix containing the overlapped reads of signal 'x'
 % - h   [1*1]       : hop size 
-% - n   [1*1]       : hop size 
 %
 % Outputs:
-% - x [nPts*1]  : the input signal to be broken apart
+% - x [nPts*1]  : the reconstructed signal
 %
 
 
@@ -38,5 +37,6 @@ function x = mergeOverlap(Mx, h)
     b = w + (r-1)*h;
     x(a:b) = x(a:b) + Mx(:,r);
   end
+
 end
 
