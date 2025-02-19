@@ -1,11 +1,11 @@
 % =============================================================================
 % Project       : lpcSpeechSynthesis
-% Module name   : study_0_Overlapped_analysis_synthesis
-% File name     : study_0_Overlapped_analysis_synthesis.m
+% Module name   : study_1_Robotic_voice
+% File name     : study_1_Robotic_voice.m
 % File type     : Matlab script
-% Purpose       : an experimental analysis/synthesis framework, with overlap
+% Purpose       : make a robotic voice based on study_0 framework
 % Author        : QuBi (nitrogenium@outlook.fr)
-% Creation date : Wednesday, 05 February 2025
+% Creation date : Wednesday, 19 February 2025
 % -----------------------------------------------------------------------------
 % Best viewed with space indentation (2 spaces)
 % =============================================================================
@@ -13,10 +13,9 @@
 % -----------------------------------------------------------------------------
 % DESCRIPTION
 % -----------------------------------------------------------------------------
-% A basic framework running a full analysis + synthesis using overlapped
-% frames.
-% The main goal is to determine windows that are compatible for this
-% purpose.
+% A simple robotic voice from the study_0 framwork, done by zeroing the
+% phase of each term in the FFT.
+% Output is not super clean but it gives a first shot.
 
 close all
 clear all
@@ -26,7 +25,7 @@ clc
 % SETTINGS
 % -----------------------------------------------------------------------------
 w = 1024;
-h = 256;
+h = 512;
 win = hann(w);
 
 % -----------------------------------------------------------------------------
@@ -48,8 +47,15 @@ Mx_w = Mx .* win;
 % -----------------------------------------------------------------------------
 % PROCESS
 % ------------------------------------------------- ----------------------------
-% ...
-% ...
+for frm = 1:nFrm
+  s = fft(Mx_w(:,frm));
+  
+  % Zero the phase of all FFT terms
+  s_r = abs(s);
+  
+  Mx_w(:,frm) = real(ifft(s_r));
+end
+
 
 % -----------------------------------------------------------------------------
 % MERGE
@@ -67,7 +73,7 @@ x_r = x_r ./ g;
 x_r = x_r(1:nPts, 1);
 
 % -----------------------------------------------------------------------------
-% PLOT
+% OUTPUT
 % -----------------------------------------------------------------------------
 
 % Original vs. reconstructed
@@ -77,10 +83,4 @@ title('Original vs. reconstructed')
 xlabel('sample')
 grid minor
 
-% Reconstruction error
-figure
-plot(abs(x-x_r))
-title('Reconstruction error')
-xlabel('sample')
-grid minor
-
+sound(x_r, fs)
