@@ -1,7 +1,7 @@
 % =============================================================================
 % Project       : lpcSpeechSynthesis
-% Module name   : study_2_Voice_detection_design
-% File name     : study_2_Voice_detection_design.m
+% Module name   : study_2_Frame_explorer
+% File name     : study_2_Frame_explorer.m
 % File type     : Matlab script
 % Purpose       : experimental framework to analyse a voice signal frame by 
 %                 frame, to help designing a voice/noise discriminator.
@@ -22,9 +22,6 @@
 close all
 clear all
 clc
-
-global clickMsg; clickMsg = 0;
-global clickCoord; clickCoord = [0;0];
 
 % -----------------------------------------------------------------------------
 % SETTINGS
@@ -96,9 +93,9 @@ grid minor
 subplotCorr = subplot(2,2, [2, 4]);
 [r, lags] = xcorr(Mx(:,1), MAX_LAG, 'normalized');
 plotCorr = plot(lags, abs(r));
-line([200, 200], [0, 1.0], 'Color', 'r', 'LineStyle','--')
-line([-200, -200], [0, 1.0], 'Color', 'r', 'LineStyle','--')
-line([-MAX_LAG, MAX_LAG], [0.4, 0.4], 'Color', 'r', 'LineStyle','--')
+%line([200, 200], [0, 1.0], 'Color', 'r', 'LineStyle','--')
+%line([-200, -200], [0, 1.0], 'Color', 'r', 'LineStyle','--')
+%line([-MAX_LAG, MAX_LAG], [0.4, 0.4], 'Color', 'r', 'LineStyle','--')
 title('Autocorr');
 xlabel('Lag')
 grid minor
