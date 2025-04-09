@@ -36,7 +36,14 @@ F_MAX = 8000;
 % Max lag in the autocorrelation plot
 MAX_LAG = 1000;
 
+% Size of the neighbourhood for the peak search.
+% A given sample is declared as a 'peak' if it is greater than every sample
+% in a range of +/-PEAK_SPAN
+PEAK_SPAN = 2;
+
 POWER_THRESH = 0.1;
+
+
 
 % -----------------------------------------------------------------------------
 % READ SIGNAL
@@ -48,37 +55,56 @@ POWER_THRESH = 0.1;
 x = x(:,1);
 
 % Prepend and append zeros to avoid information loss
-x = [zeros(WINDOW_SIZE, 1); x; zeros(WINDOW_SIZE, 1)];
+xPad = [zeros(WINDOW_SIZE, 1); x; zeros(WINDOW_SIZE, 1)];
 
+nPts = size(xPad,1);
 
 
 % -----------------------------------------------------------------------------
 % SPLIT
 % -----------------------------------------------------------------------------
-[Mx, nFrm] = splitOverlap(x, WINDOW_SIZE, HOP_SIZE);
+[Mx, nFrm] = splitOverlap(xPad, WINDOW_SIZE, HOP_SIZE);
 
 % Apply windowing
-y = Mx .* hann(WINDOW_SIZE);
+Mx_w = Mx .* hann(WINDOW_SIZE);
 
+
+
+% -----------------------------------------------------------------------------
+% VOICE/NOISE ANALYSIS
+% -----------------------------------------------------------------------------
+
+% Copy the original frames
+Mx_p = Mx_w;
+
+% Loop on the frames
 for frame = 1:nFrm
   
-  xCurr = Mx(:,frame);
+  xCurr = Mx_w(:, frame);
 
   if (sum(xCurr.^2) > POWER_THRESH)
  
     [r, lags] = xcorr(xCurr, MAX_LAG, 'normalized');
 
     peakCount = 0;
-    peakLag = zeros(MAX_LAG-2, 1);
-    peakVal = zeros(MAX_LAG-2, 1);
-    for lag = 1:(MAX_LAG-1)
+    peakLag = zeros(MAX_LAG-(2*PEAK_SPAN), 1);
+    peakVal = zeros(MAX_LAG-(2*PEAK_SPAN), 1);
+    for lag = PEAK_SPAN:(MAX_LAG-PEAK_SPAN)
       u = lag + (MAX_LAG+1);
 
-      rL = abs(r(u-1));
+      isMonotonous = true;
       rC = abs(r(u));
-      rR = abs(r(u+1));
-      
-      if ((rL < rC) && (rC > rR))
+      for n = 1:PEAK_SPAN
+        rL_ = abs(r(u-n)); rL = abs(r(u-(n-1)));
+        rR_ = abs(r(u+n)); rR = abs(r(u+(n-1)));
+        
+        if ~((rL_ < rL) && (rR > rR_))
+          isMonotonous = false;
+          break;
+        end
+      end
+        
+      if isMonotonous 
         peakCount = peakCount + 1;
         peakLag(peakCount) = lag;
         peakVal(peakCount) = rC;
@@ -87,13 +113,52 @@ for frame = 1:nFrm
     peakLag = peakLag(1:peakCount);
     peakVal = peakVal(1:peakCount);
 
-    plot(lags, abs(r), peakLag, peakVal, 'r+');
-    title(sprintf('Frame %d/%d - peakCount: %d', frame, nFrm, peakCount));
-    grid minor
-    %pause(0.01)
-    pause()
+    % Reconstruct
+    if (peakCount > 50)
+      Mx_p(:, frame) = sqrt(var(xCurr))*randn(WINDOW_SIZE, 1);
+    else
+      Mx_p(:, frame) = xCurr;
+    end
+
+  else
+    %Mx_p(:, frame) = zeros(WINDOW_SIZE, 1);
+    Mx_p(:, frame) = xCurr;
   end
+
+
+  % TODO
+  % - plot signal before/after
+  % - plot xcorr before/after
+  % ...
+
+
 
 end
 
+x_r = mergeOverlap(Mx_p, HOP_SIZE);
+    
 
+% Evaluate the window gain
+win = hann(WINDOW_SIZE);
+Mwin = win(:, ones(1, nFrm));
+g = mergeOverlap(Mwin, HOP_SIZE);
+
+% Remove the window gain
+x_r = x_r ./ g;
+
+% Remove the padding
+x_r = x_r(1:nPts, 1);
+
+
+
+    % plot(lags, abs(r), peakLag, peakVal, 'r+');
+    % title(sprintf('Frame %d/%d - peakCount: %d', frame, nFrm, peakCount));
+    % grid minor
+    % %pause(0.01)
+    % pause()
+  
+
+
+plot([xPad, x_r])
+
+sound(x_r, fs)
